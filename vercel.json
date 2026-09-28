@@ -1,0 +1,11 @@
+{
+  "headers": [
+    {
+      "source": "/catalog.pdf",
+      "headers": [
+        { "key": "Content-Type", "value": "application/pdf" },
+        { "key": "Content-Disposition", "value": "inline; filename=\"catalog.pdf\"" }
+      ]
+    }
+  ]
+}
