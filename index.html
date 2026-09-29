@@ -8,16 +8,44 @@
   body{font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#444;background:#fff}
   a{color:#0b57d0}
 </style>
-<!-- Счётчик просмотров GoatCounter -->
-<!-- Замените YOUR-CODE на код вашего сайта, полученный при регистрации на goatcounter.com -->
+<!-- Отключаем автоматическую отправку события при загрузке скрипта,
+     чтобы отправить его вручную и дождаться подтверждения перед редиректом -->
 <script data-goatcounter="https://okraina-catalog.goatcounter.com/count"
+        data-goatcounter-settings='{"no_onload": true}'
         async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
   <p>Открываем каталог… <a href="catalog.pdf">Если не открылся, нажмите сюда</a></p>
   <script>
-    // Небольшая пауза, чтобы счётчик успел отправить просмотр, затем открываем PDF
-    setTimeout(function(){ location.replace('catalog.pdf'); }, 700);
+    var redirected = false;
+    function goToPdf() {
+      if (redirected) return;
+      redirected = true;
+      location.replace('catalog.pdf');
+    }
+
+    // Страховка: если счётчик не сработает за 1.5 сек (заблокирован адблокером,
+    // не успел загрузиться и т.п.) — всё равно открываем PDF
+    var fallback = setTimeout(goToPdf, 1500);
+
+    // Ждём, пока скрипт count.js загрузится, отправляем событие вручную
+    // и переходим на PDF сразу после того, как GoatCounter подтвердит отправку
+    var checkInterval = setInterval(function () {
+      if (window.goatcounter && window.goatcounter.count) {
+        clearInterval(checkInterval);
+        try {
+          window.goatcounter.count({
+            path: location.pathname,
+            callback: function () {
+              clearTimeout(fallback);
+              goToPdf();
+            }
+          });
+        } catch (e) {
+          goToPdf();
+        }
+      }
+    }, 50);
   </script>
 </body>
 </html>
